@@ -57,6 +57,10 @@ See [ASSETS.md](ASSETS.md) for generated artwork paths and prompts.
 
 The bundled character images are unofficial, original fan-style illustrations created for this project. Chiikawa and its characters belong to their respective rights holders. This independent fan project is not affiliated with or endorsed by those rights holders.
 
+## License
+
+The source code is licensed under the [MIT License](LICENSE). The bundled Chiikawa-inspired artwork is a separate fan-style asset and remains subject to the artwork disclaimer above.
+
 ## Develop and verify
 
 Requires Node.js 20+ for the development commands; Chrome needs no build step or runtime installation.
