@@ -23,8 +23,14 @@ export function cleanEntry(raw) {
     description: String(raw.description || '').slice(0, 1600),
     text: String(raw.text || '').slice(0, 3000),
     savedAt: Number.isFinite(raw.savedAt) && raw.savedAt > 0 ? raw.savedAt : Date.now(),
-    pinned: raw.pinned === true
+    pinned: raw.pinned === true,
+    topic: String(raw.topic || '').trim().slice(0, 80)
   };
+}
+
+export function cleanTopic(value) {
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > 80) throw new Error('Choose a topic name up to 80 characters.');
+  return value.trim();
 }
 
 function terms(text) {
@@ -41,7 +47,7 @@ function topicTerms(text) {
 }
 
 // ponytail: lexical topic discovery is offline and explainable; semantic synonyms need an embedding model.
-export function groupEntries(entries) {
+export function groupEntries(entries, savedTopics = []) {
   const docs = entries.map(entry => {
     const weights = new Map();
     const titleTerms = new Set(topicTerms(entry.title).map(word => word.toLowerCase()));
@@ -55,11 +61,16 @@ export function groupEntries(entries) {
     return { entry, weights, titleTerms };
   });
   const frequency = new Map();
-  for (const doc of docs) for (const key of doc.titleTerms) frequency.set(key, (frequency.get(key) || 0) + 1);
+  for (const doc of docs) if (!doc.entry.topic) for (const key of doc.titleTerms) frequency.set(key, (frequency.get(key) || 0) + 1);
   const groups = new Map();
+  for (const value of savedTopics) {
+    const label = cleanTopic(value);
+    if (!groups.has(label.toLowerCase())) groups.set(label.toLowerCase(), { id: label.toLowerCase(), label, entries: [] });
+  }
   for (const doc of docs) {
     let best, score = 0;
-    for (const [key, value] of doc.weights) {
+    if (doc.entry.topic) best = { key: doc.entry.topic.toLowerCase(), label: doc.entry.topic };
+    for (const [key, value] of doc.entry.topic ? [] : doc.weights) {
       const count = frequency.get(key);
       if (!count || count < 2 || !doc.titleTerms.has(key)) continue;
       const distinctive = /[a-z][A-Z]|[A-Z].*[A-Z]/.test(value.label) ? 1.35 : /^[A-Z]/.test(value.label) ? 1.15 : 1;
@@ -79,6 +90,7 @@ export function groupEntries(entries) {
 
 export function parseBackup(text) {
   const data = JSON.parse(text);
-  if (data?.version !== 1 || !Array.isArray(data.entries) || data.entries.length > 20000) throw new Error('Choose a Tag Master backup (up to 20,000 links).');
-  return data.entries.map(cleanEntry);
+  if (![1, 2].includes(data?.version) || !Array.isArray(data.entries) || data.entries.length > 20000) throw new Error('Choose a Tag Master backup (up to 20,000 links).');
+  if (data.version === 2 && (!Array.isArray(data.topics) || data.topics.length > 2000)) throw new Error('Choose a valid Tag Master backup.');
+  return { entries: data.entries.map(cleanEntry), topics: data.version === 2 ? data.topics.map(cleanTopic) : [] };
 }

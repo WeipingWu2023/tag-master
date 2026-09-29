@@ -21,7 +21,12 @@ test('safe URLs, duplicate video identity, dynamic topics, and backup validation
   ].map(([title,description],i)=>cleanEntry({title,description,url:`https://example.org/${i}`}));
   assert.deepEqual(groupEntries(mixed).map(g=>[g.label,g.entries.length]).sort(),[['Codex',2],['Guitar',2],['Machine learning',2]]);
   assert.equal(groupEntries([cleanEntry({title:'天文学 观测 指南',url:'https://example.com/1'}),cleanEntry({title:'天文学 恒星 研究',url:'https://example.com/2'})])[0].entries.length,2);
-  assert.deepEqual(parseBackup(JSON.stringify({version:1,entries})),entries);
+  assert.deepEqual(parseBackup(JSON.stringify({version:1,entries})),{entries,topics:[]});
+  const moved=cleanEntry({...entries[0],topic:'Study notes'});
+  const manual=groupEntries([moved,...entries.slice(1)],['Study notes','Read later']);
+  assert.equal(manual.find(group=>group.label==='Study notes').entries[0].id,moved.id);
+  assert.equal(manual.find(group=>group.label==='Read later').entries.length,0);
+  assert.deepEqual(parseBackup(JSON.stringify({version:2,entries:[moved],topics:['Study notes','Read later']})),{entries:[moved],topics:['Study notes','Read later']});
   assert.throws(()=>parseBackup('{"version":2,"entries":[]}'));
   assert.throws(()=>parseBackup('{"version":1,"entries":[{"url":"file:///secrets"}]}'));
 });

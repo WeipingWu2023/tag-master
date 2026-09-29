@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tag Master",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Save pages, discover shared topics, and keep your tabs within reach.",
   "minimum_chrome_version": "120",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],

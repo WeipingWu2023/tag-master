@@ -1,4 +1,4 @@
-import { cleanEntry, parseBackup } from './core.js';
+import { cleanEntry, cleanTopic, parseBackup } from './core.js';
 
 let queue = Promise.resolve();
 function serialize(task) { const result = queue.then(task); queue = result.catch(() => {}); return result; }
@@ -8,7 +8,7 @@ chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
 async function save(raw) {
   const entry = cleanEntry(raw);
   const previous = (await chrome.storage.local.get(key(entry.id)))[key(entry.id)];
-  if (previous) { entry.savedAt = previous.savedAt; entry.pinned = previous.pinned; }
+  if (previous) { entry.savedAt = previous.savedAt; entry.pinned = previous.pinned; entry.topic = previous.topic || ''; }
   await chrome.storage.local.set({ [key(entry.id)]: entry });
   return { ok: true, duplicate: !!previous };
 }
@@ -29,11 +29,42 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
       if (entry) await chrome.storage.local.set({ [key(entry.id)]: { ...entry, pinned: !entry.pinned } });
       return { ok: true };
     }
+    if (message.type === 'create-topic') {
+      const label = cleanTopic(message.topic);
+      const { topics = [] } = await chrome.storage.local.get('topics');
+      if (topics.some(topic => topic.toLowerCase() === label.toLowerCase())) throw new Error('That topic already exists.');
+      await chrome.storage.local.set({ topics: [...topics, label] });
+      return { ok: true };
+    }
+    if (message.type === 'set-topic') {
+      const label = cleanTopic(message.topic);
+      const entry = (await chrome.storage.local.get(key(message.id)))[key(message.id)];
+      if (!entry) throw new Error('This link is no longer in your library.');
+      const { topics = [] } = await chrome.storage.local.get('topics');
+      await chrome.storage.local.set({
+        [key(entry.id)]: { ...entry, topic: label },
+        topics: topics.some(topic => topic.toLowerCase() === label.toLowerCase()) ? topics : [...topics, label]
+      });
+      return { ok: true };
+    }
+    if (message.type === 'rename-topic') {
+      const label = cleanTopic(message.topic);
+      if (!Array.isArray(message.ids) || message.ids.length > 20000) throw new Error('Could not rename this topic.');
+      const ids = message.ids.filter(id => typeof id === 'string');
+      const stored = await chrome.storage.local.get([...ids.map(key), 'topics']);
+      const updates = Object.fromEntries(ids.filter(id => stored[key(id)]).map(id => [key(id), { ...stored[key(id)], topic: label }]));
+      const topics = (stored.topics || []).filter(topic => topic.toLowerCase() !== String(message.oldTopic).toLowerCase());
+      if (!topics.some(topic => topic.toLowerCase() === label.toLowerCase())) topics.push(label);
+      await chrome.storage.local.set({ ...updates, topics });
+      return { ok: true };
+    }
     if (message.type === 'import') {
-      const entries = parseBackup(message.text);
+      const { entries, topics } = parseBackup(message.text);
       const existing = await chrome.storage.local.get(null);
       const additions = Object.fromEntries(entries.filter(e => !existing[key(e.id)]).map(e => [key(e.id), e]));
-      await chrome.storage.local.set(additions);
+      const mergedTopics = [...(existing.topics || [])];
+      for (const topic of topics) if (!mergedTopics.some(value => value.toLowerCase() === topic.toLowerCase())) mergedTopics.push(topic);
+      await chrome.storage.local.set({ ...additions, topics: mergedTopics });
       return { ok: true, count: Object.keys(additions).length };
     }
     throw new Error('Unknown action.');
