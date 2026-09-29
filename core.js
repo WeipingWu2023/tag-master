@@ -88,6 +88,12 @@ export function groupEntries(entries, savedTopics = []) {
   return [...groups.values()].sort((a, b) => b.entries.length - a.entries.length || a.label.localeCompare(b.label));
 }
 
+export function removeEmptyTopic(topics, entries, value) {
+  const id = cleanTopic(value).toLowerCase();
+  if (groupEntries(entries, topics).some(group => group.id === id && group.entries.length)) throw new Error('Only empty topics can be deleted.');
+  return topics.filter(topic => topic.toLowerCase() !== id);
+}
+
 export function parseBackup(text) {
   const data = JSON.parse(text);
   if (![1, 2].includes(data?.version) || !Array.isArray(data.entries) || data.entries.length > 20000) throw new Error('Choose a Tag Master backup (up to 20,000 links).');

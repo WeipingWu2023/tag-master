@@ -1,4 +1,4 @@
-import { cleanEntry, cleanTopic, groupEntries, parseBackup } from './core.js';
+import { cleanEntry, cleanTopic, groupEntries, parseBackup, removeEmptyTopic } from './core.js';
 
 const $ = selector => document.querySelector(selector);
 const extension = !!globalThis.chrome?.runtime?.id;
@@ -37,6 +37,7 @@ async function mutate(message) {
     if(message.type==='delete')updated=updated.filter(e=>e.id!==message.id);
     if(message.type==='pin')updated=updated.map(e=>e.id===message.id?{...e,pinned:!e.pinned}:e);
     if(message.type==='create-topic') { const label=cleanTopic(message.topic);if(topics.some(topic=>topic.toLowerCase()===label.toLowerCase()))throw new Error('That topic already exists.');topics.push(label); }
+    if(message.type==='delete-topic')topics=removeEmptyTopic(topics,updated,message.topic);
     if(message.type==='set-topic') { const label=cleanTopic(message.topic);updated=updated.map(e=>e.id===message.id?{...e,topic:label}:e);if(!topics.some(topic=>topic.toLowerCase()===label.toLowerCase()))topics.push(label); }
     if(message.type==='rename-topic') { const label=cleanTopic(message.topic);const ids=new Set(message.ids);updated=updated.map(e=>ids.has(e.id)?{...e,topic:label}:e);topics=topics.filter(topic=>topic.toLowerCase()!==message.oldTopic.toLowerCase());if(!topics.some(topic=>topic.toLowerCase()===label.toLowerCase()))topics.push(label); }
     if(message.type==='import') { const backup=parseBackup(message.text),ids=new Set(updated.map(e=>e.id));for(const entry of backup.entries)if(!ids.has(entry.id)){updated.push(entry);ids.add(entry.id);}for(const topic of backup.topics)if(!topics.some(value=>value.toLowerCase()===topic.toLowerCase()))topics.push(topic); }
@@ -85,7 +86,9 @@ function render() {
   const cards=groups.map(group=>{
     const card=element('section','topic-card'), heading=element('div','topic-heading');
     const title=element('h3');const rename=element('button','topic-name',group.label);rename.type='button';rename.title='Rename topic';rename.setAttribute('aria-label',`Rename topic ${group.label}`);rename.onclick=()=>editTopic(rename,group);title.append(rename);
-    heading.append(title,element('span','count',String(group.entries.length)));card.append(heading,element('div','topic-info',group.entries.length?'Gathered by topic':'Drag links here to fill this topic'));
+    const indicator=group.entries.length?element('span','count',String(group.entries.length)):element('button','topic-close','×');
+    if(!group.entries.length){indicator.type='button';indicator.title='Delete empty topic';indicator.setAttribute('aria-label',`Delete empty topic ${group.label}`);indicator.onclick=()=>run(async()=>{if(await mutate({type:'delete-topic',topic:group.label}))notify('Empty topic removed.');});}
+    heading.append(title,indicator);card.append(heading,element('div','topic-info',group.entries.length?'Gathered by topic':'Drag links here to fill this topic'));
     card.ondragover=event=>{if(event.dataTransfer.types.includes('text/plain')){event.preventDefault();event.dataTransfer.dropEffect='move';card.classList.add('drop-target');}};
     card.ondragleave=event=>{if(!card.contains(event.relatedTarget))card.classList.remove('drop-target');};
     card.ondrop=event=>{event.preventDefault();card.classList.remove('drop-target');const id=event.dataTransfer.getData('text/plain');if(!entries.some(entry=>entry.id===id)||group.entries.some(entry=>entry.id===id))return;run(async()=>{if(await mutate({type:'set-topic',id,topic:group.label}))notify(`Moved to ${group.label}.`);});};

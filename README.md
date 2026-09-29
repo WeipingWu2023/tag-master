@@ -40,7 +40,7 @@ Export a backup first. Download and extract the latest files, replace the conten
 - Click the extension toolbar button to open the library. Saving never closes a tab. Once a save is confirmed, you can close the original yourself.
 - Hover or keyboard-focus a link to see its saved description or content excerpt. This is a text preview captured at save time, not a live embedded page or a complete offline copy.
 - Use a star to pin favorites, **×** to delete, and **Undo** to restore the last deletion for 10 seconds.
-- Click a topic title to rename it, use **+ New topic** to create an empty topic, and drag a saved link onto another topic card to move it. These choices survive restarts and are included in exported backups.
+- Click a topic title to rename it, use **+ New topic** to create an empty topic, and drag a saved link onto another topic card to move it. Click the small **×** on an empty topic to remove it. These choices survive restarts and are included in exported backups.
 - Topics are discovered from repeated words in titles and descriptions, including languages supported by `Intl.Segmenter`. There is no predefined topic list, cloud AI service, or API key. This lexical method can miss synonyms and sometimes group pages around a broad word. Titles and descriptions carry more reliable signals than full article text.
 - The Recent view shows the last seven days. Filtering does not alter saved records.
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canonicalUrl, cleanEntry, groupEntries, parseBackup } from '../core.js';
+import { canonicalUrl, cleanEntry, groupEntries, parseBackup, removeEmptyTopic } from '../core.js';
 
 test('safe URLs, duplicate video identity, dynamic topics, and backup validation', () => {
   assert.equal(canonicalUrl('https://youtu.be/abc?t=20'),canonicalUrl('https://www.youtube.com/watch?v=abc&list=123&t=60'));
@@ -26,6 +26,8 @@ test('safe URLs, duplicate video identity, dynamic topics, and backup validation
   const manual=groupEntries([moved,...entries.slice(1)],['Study notes','Read later']);
   assert.equal(manual.find(group=>group.label==='Study notes').entries[0].id,moved.id);
   assert.equal(manual.find(group=>group.label==='Read later').entries.length,0);
+  assert.deepEqual(removeEmptyTopic(['Study notes','Read later'],[moved],'Read later'),['Study notes']);
+  assert.throws(()=>removeEmptyTopic(['Study notes'],[moved],'Study notes'),/Only empty topics/);
   assert.deepEqual(parseBackup(JSON.stringify({version:2,entries:[moved],topics:['Study notes','Read later']})),{entries:[moved],topics:['Study notes','Read later']});
   assert.throws(()=>parseBackup('{"version":2,"entries":[]}'));
   assert.throws(()=>parseBackup('{"version":1,"entries":[{"url":"file:///secrets"}]}'));

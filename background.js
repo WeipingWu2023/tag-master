@@ -1,4 +1,4 @@
-import { cleanEntry, cleanTopic, parseBackup } from './core.js';
+import { cleanEntry, cleanTopic, parseBackup, removeEmptyTopic } from './core.js';
 
 let queue = Promise.resolve();
 function serialize(task) { const result = queue.then(task); queue = result.catch(() => {}); return result; }
@@ -34,6 +34,12 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
       const { topics = [] } = await chrome.storage.local.get('topics');
       if (topics.some(topic => topic.toLowerCase() === label.toLowerCase())) throw new Error('That topic already exists.');
       await chrome.storage.local.set({ topics: [...topics, label] });
+      return { ok: true };
+    }
+    if (message.type === 'delete-topic') {
+      const stored = await chrome.storage.local.get(null);
+      const entries = Object.entries(stored).filter(([name]) => name.startsWith('page:')).map(([, entry]) => cleanEntry(entry));
+      await chrome.storage.local.set({ topics: removeEmptyTopic(stored.topics || [], entries, message.topic) });
       return { ok: true };
     }
     if (message.type === 'set-topic') {
