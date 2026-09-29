@@ -2,17 +2,35 @@
 
 A dependency-free Chrome Manifest V3 extension that saves selected pages to a persistent, automatically grouped library.
 
-## Install
+![Tag Master library in the light theme](docs/tag-master-library.png)
 
-1. Open `chrome://extensions` in Chrome.
-2. Turn on **Developer mode**.
-3. Click **Load unpacked** and select this folder: `D:\god\Plug-in\Tag Master`.
-4. Pin **Tag Master** in Chrome's extensions menu. Click its toolbar button to open the library.
-5. Existing HTTP/HTTPS pages receive the shortcut listener automatically. If Chrome withholds site access, allow Tag Master to run on that site and refresh it.
+## Browser support
 
-### Update from 1.0
+- Google Chrome 120 or newer on Windows, macOS, and Linux.
+- Recent Chromium-based desktop browsers should also work. In Microsoft Edge, use `edge://extensions` instead of `chrome://extensions`.
+- Firefox, Safari, Chrome for Android, and Chrome for iOS are not supported by this build.
+- This repository is an unpacked development build. It is not currently a one-click Chrome Web Store install.
 
-At `chrome://extensions`, click **Reload** on Tag Master, then refresh the library page. Keep the same extension folder to preserve the extension identity and saved library. The new version adds website host permissions so it can enable the shortcut in already-open tabs across windows. If Chrome requests site access, allow it for the sites you want to save.
+## Install from GitHub
+
+1. On this GitHub page, click **Code**, then **Download ZIP**.
+2. Extract the downloaded ZIP file. Do not select the ZIP itself in Chrome.
+3. Open `chrome://extensions` in desktop Chrome.
+4. Turn on **Developer mode** in the top-right corner.
+5. Click **Load unpacked**.
+6. Select the extracted `tag-master-main` folder—the folder that directly contains `manifest.json`.
+7. Pin **Tag Master** in Chrome's extensions menu. Click its toolbar button to open the library.
+8. If Chrome withholds site access, allow Tag Master on the pages where you want the shortcut to work, then refresh those pages.
+
+Developers can instead clone the repository and load the cloned folder:
+
+```text
+git clone https://github.com/WeipingWu2023/tag-master.git
+```
+
+### Update an existing installation
+
+Export a backup first. Download and extract the latest files, replace the contents of the existing extension folder without moving or renaming that folder, then click **Reload** on Tag Master at `chrome://extensions`. Keeping the same folder path helps Chrome preserve the unpacked extension identity and saved library. If Chrome requests site access after an update, allow it for the sites you want to save.
 
 ## Use
 
@@ -36,6 +54,8 @@ The content script runs in HTTP/HTTPS pages and frames to detect the requested s
 The default light theme uses pale yellow and warm cream, with a cocoa-colored dark theme and an optional system setting. Existing theme preferences are preserved. Local Chiikawa artwork and a mascot logo are bundled with the extension, so they work offline. The library logo gently waves and sparkles; hover or keyboard-focus the brand to animate it again. Animation pauses while the page is hidden and is disabled by the system's reduced-motion preference. Chrome's toolbar uses matching PNG icons in 16, 32, 48, and 128-pixel sizes.
 
 See [ASSETS.md](ASSETS.md) for generated artwork paths and prompts.
+
+The bundled character images are unofficial, original fan-style illustrations created for this project. Chiikawa and its characters belong to their respective rights holders. This independent fan project is not affiliated with or endorsed by those rights holders.
 
 ## Develop and verify
 
