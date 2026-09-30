@@ -37,12 +37,20 @@ Export a backup first. Download and extract the latest files, replace the conten
 - Press **Ctrl + Alt + P** while focused on a webpage in **any Chrome window in the same profile** to save its current title, URL, description, and a short main-content excerpt. The library can be in another window or closed. A confirmation appears after storage succeeds. Focus inside an embedded webpage also works and saves the main tab, not the embedded frame.
 - **Ctrl + Shift + P** is a registered browser-level fallback. Check conflicts or change it at `chrome://extensions/shortcuts`.
 - Chrome forbids Ctrl+Alt in registered commands (AltGr conflicts), so that combination is implemented through a webpage key listener. It requires webpage focus; use the registered fallback when the address bar is focused. Chrome settings, the Chrome Web Store, built-in PDF viewers, and other protected pages cannot be captured. Add a link manually when capture is unavailable. Other browsers and separate Chrome profiles do not share this library.
-- Click the extension toolbar button to open the library and create a native **Tag Master** tab group in that Chrome window. Drag a website tab into the group to save it using the same capture as the shortcut; the original tab closes only after storage succeeds. If capture fails, the tab stays open. Click the toolbar button in another window to create a group there too. The keyboard shortcut saves without closing its tab.
+- Click the extension toolbar button to open the library and create a native **Tag Master** tab group in that Chrome window. See [Drag a tab to save it](#drag-a-tab-to-save-it) below.
 - Hover or keyboard-focus a link to see its saved description or content excerpt. This is a text preview captured at save time, not a live embedded page or a complete offline copy.
 - Use a star to pin favorites, **×** to delete, and **Undo** to restore the last deletion for 10 seconds.
 - Click a topic title to rename it, use **+ New topic** to create an empty topic, and drag a saved link onto another topic card to move it. Click the small **×** on an empty topic to remove it. These choices survive restarts and are included in exported backups.
 - Topics are discovered from repeated words in titles and descriptions, including languages supported by `Intl.Segmenter`. There is no predefined topic list, cloud AI service, or API key. This lexical method can miss synonyms and sometimes group pages around a broad word. Titles and descriptions carry more reliable signals than full article text.
 - The Recent view shows the last seven days. Filtering does not alter saved records.
+
+### Drag a tab to save it
+
+1. Click the **Tag Master** extension button in the Chrome window where you want the drop target. This opens the library and creates a yellow **Tag Master** group in the tab bar.
+2. Drag a website tab from the tab bar into that group. The extension captures its title, URL, description, and content excerpt, just like **Ctrl + Alt + P**.
+3. After the link is safely stored, the original tab closes. If capture fails, the tab stays open in the group so you can retry or move it back out.
+
+For another Chrome window, click the extension button there to create its own group. Drag onto the **tab group in the tab bar**, not the extension toolbar button. The keyboard shortcut still saves without closing the source tab. Chrome settings, Web Store pages, and other protected tabs cannot be captured.
 
 ## Archive and privacy
 
