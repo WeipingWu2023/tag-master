@@ -109,12 +109,34 @@ async function enableExistingTabs() {
 chrome.runtime.onInstalled.addListener(enableExistingTabs);
 chrome.runtime.onStartup.addListener(enableExistingTabs);
 
-chrome.action.onClicked.addListener(async () => {
+chrome.action.onClicked.addListener(async (clickedTab) => {
   const url = chrome.runtime.getURL('library.html');
-  const tabs = await chrome.tabs.query({});
+  const windowId = clickedTab?.windowId ?? (await chrome.windows.getLastFocused()).id;
+  const tabs = await chrome.tabs.query({ windowId });
   const existing = tabs.find(tab => tab.url === url);
-  if (existing) { await chrome.tabs.update(existing.id, { active: true }); await chrome.windows.update(existing.windowId, { focused: true }); }
-  else await chrome.tabs.create({ url });
+  const library = existing || await chrome.tabs.create({ windowId, url });
+  const groupId = library.groupId === -1 ? await chrome.tabs.group({ tabIds: library.id }) : library.groupId;
+  await chrome.tabGroups.update(groupId, { title: 'Tag Master', color: 'yellow' });
+  await chrome.tabs.update(library.id, { active: true });
+  await chrome.windows.update(windowId, { focused: true });
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  const groupId = changeInfo.groupId;
+  if (groupId === undefined || groupId === -1) return;
+  serialize(async () => {
+    const url = chrome.runtime.getURL('library.html');
+    const tabs = await chrome.tabs.query({ groupId });
+    if (!tabs.some(tab => tab.url === url)) return;
+    const tab = tabs.find(tab => tab.id === tabId);
+    if (!tab || !/^https?:/.test(tab.url || '')) return;
+    await captureTab(tabId);
+    const current = await chrome.tabs.get(tabId).catch(() => null);
+    if (current?.groupId === groupId && current.url === tab.url) await chrome.tabs.remove(tabId);
+  }).catch(async error => {
+    await chrome.action.setBadgeText({ text: '!', tabId }).catch(() => {});
+    await chrome.action.setTitle({ title: error.message, tabId }).catch(() => {});
+  });
 });
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
