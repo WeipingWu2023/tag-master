@@ -46,11 +46,13 @@ Export a backup first. Download and extract the latest files, replace the conten
 
 ### Drag a tab to save it
 
-1. Click the **Tag Master** extension button in the Chrome window where you want the drop target. This opens the library and creates a yellow **Tag Master** group in the tab bar.
+1. Click the **Tag Master** extension button. This opens the library and creates one yellow **Tag Master** group in the tab bar, or returns to the existing group if one is already open.
 2. Drag a website tab from the tab bar into that group. The extension captures its title, URL, description, and content excerpt, just like **Ctrl + Alt + P**.
 3. After the link is safely stored, the original tab closes. If capture fails, the tab stays open in the group so you can retry or move it back out.
 
-For another Chrome window, click the extension button there to create its own group. Drag onto the **tab group in the tab bar**, not the extension toolbar button. The keyboard shortcut still saves without closing the source tab. Chrome settings, Web Store pages, and other protected tabs cannot be captured.
+Clicking the extension button from another Chrome window brings the existing Tag Master group to the front instead of creating another one. Drag onto the **tab group in the tab bar**, not the extension toolbar button. The keyboard shortcut still saves without closing the source tab. Chrome settings, Web Store pages, and other protected tabs cannot be captured.
+
+If you already have several yellow **Tag Master** labels in the bookmarks bar, they are Chrome's saved tab groups from earlier versions. Keep the group containing your library tab, then right-click each unwanted label and choose **Delete group**. First move out any tabs you want to keep. Deleting a Chrome tab group does not delete links already saved in Tag Master's library.
 
 ## Archive and privacy
 

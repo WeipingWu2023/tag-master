@@ -109,17 +109,20 @@ async function enableExistingTabs() {
 chrome.runtime.onInstalled.addListener(enableExistingTabs);
 chrome.runtime.onStartup.addListener(enableExistingTabs);
 
-chrome.action.onClicked.addListener(async (clickedTab) => {
+async function openLibrary(clickedTab) {
   const url = chrome.runtime.getURL('library.html');
   const windowId = clickedTab?.windowId ?? (await chrome.windows.getLastFocused()).id;
-  const tabs = await chrome.tabs.query({ windowId });
-  const existing = tabs.find(tab => tab.url === url);
+  const tabs = await chrome.tabs.query({});
+  const existing = tabs.find(tab => tab.url === url && tab.groupId !== -1)
+    || tabs.find(tab => tab.url === url || tab.url?.startsWith(url + '?'));
   const library = existing || await chrome.tabs.create({ windowId, url });
+  if (existing && existing.url !== url) await chrome.tabs.update(library.id, { url });
   const groupId = library.groupId === -1 ? await chrome.tabs.group({ tabIds: library.id }) : library.groupId;
   await chrome.tabGroups.update(groupId, { title: 'Tag Master', color: 'yellow' });
   await chrome.tabs.update(library.id, { active: true });
-  await chrome.windows.update(windowId, { focused: true });
-});
+  await chrome.windows.update(library.windowId, { focused: true });
+}
+chrome.action.onClicked.addListener(tab => serialize(() => openLibrary(tab)));
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   const groupId = changeInfo.groupId;
